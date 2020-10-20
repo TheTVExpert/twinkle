@@ -175,7 +175,28 @@ Twinkle.tag.callback = function friendlytagCallback() {
 
 		case 'redirect':
 			Window.setTitle('Redirect tagging');
-
+			
+			var redirectTagPlainlist = '';
+			$.each(Twinkle.tag.redirectList, function(groupname,group) {
+				$.each(group, function(subgroupName, subgroup) {
+					subgroup.map(function (item) {
+						redirectTagPlainlist += item.tag + '|';
+					})
+				});
+			});
+			redirectTagPlainlist = redirectTagPlainlist.slice(0,-1);
+			
+			var api = new Morebits.wiki.api('Getting existing rcats', {
+				'action': 'query',
+				'prop': 'templates',
+				'titles': Morebits.pageNameNorm,
+				'tltemplates': redirectTagPlainlist,
+				'tllimit': 'max' // 500 is max for normal users, 5000 for bots and sysops
+			}, function getRcats(apiobj) {
+				console.log(apiobj.responseXML);
+			});
+			api.post();
+			
 			var i = 1;
 			$.each(Twinkle.tag.redirectList, function(groupName, group) {
 				form.append({ type: 'header', id: 'tagHeader' + i, label: groupName });

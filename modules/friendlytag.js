@@ -177,14 +177,28 @@ Twinkle.tag.callback = function friendlytagCallback() {
 			Window.setTitle('Redirect tagging');
 			
 			var redirectTagPlainlist = '';
+			var redirectTagPlainlist2 = '';
+			var redirectTagPlainlist3 = '';
+			var j = 1;
 			$.each(Twinkle.tag.redirectList, function(groupname,group) {
 				$.each(group, function(subgroupName, subgroup) {
 					subgroup.map(function (item) {
-						redirectTagPlainlist += item.tag + '|';
-					})
+						j++;
+						//console.log(j);
+						if (j<50) {
+							redirectTagPlainlist += 'Template:' + item.tag + '|';
+						} else if (j<98){
+							//console.log(j);
+							redirectTagPlainlist2 += 'Template:' + item.tag + '|';
+						} else {
+							redirectTagPlainlist3 += 'Template:' + item.tag + '|';
+						}
+					});
 				});
 			});
 			redirectTagPlainlist = redirectTagPlainlist.slice(0,-1);
+			redirectTagPlainlist2 = redirectTagPlainlist2.slice(0,-1);
+			redirectTagPlainlist3 = redirectTagPlainlist3.slice(0,-1);
 			
 			var api = new Morebits.wiki.api('Getting existing rcats', {
 				'action': 'query',
@@ -192,8 +206,48 @@ Twinkle.tag.callback = function friendlytagCallback() {
 				'titles': Morebits.pageNameNorm,
 				'tltemplates': redirectTagPlainlist,
 				'tllimit': 'max' // 500 is max for normal users, 5000 for bots and sysops
-			}, function getRcats(apiobj) {
-				console.log(apiobj.responseXML);
+			}, function getRcats(data) {
+				var p = 0;
+				var findTemplate = data.response.getElementsByTagName('api')[0].getElementsByTagName('query')[0].getElementsByTagName('pages')[0].getElementsByTagName('page')[0].getElementsByTagName('templates')[0];
+				if(findTemplate != undefined) {
+					for (p=0;p < findTemplate.getElementsByTagName('tl').length; p++) {
+						console.log(findTemplate.getElementsByTagName('tl')[p].getAttribute('title'));	
+					}
+				}
+			});
+			api.post();
+			
+			var api = new Morebits.wiki.api('Getting existing rcats', {
+				'action': 'query',
+				'prop': 'templates',
+				'titles': Morebits.pageNameNorm,
+				'tltemplates': redirectTagPlainlist2,
+				'tllimit': 'max' // 500 is max for normal users, 5000 for bots and sysops
+			}, function getRcats(data) {
+				var p = 0;
+				var findTemplate = data.response.getElementsByTagName('api')[0].getElementsByTagName('query')[0].getElementsByTagName('pages')[0].getElementsByTagName('page')[0].getElementsByTagName('templates')[0];
+				if(findTemplate != undefined) {
+					for (p=0;p < findTemplate.getElementsByTagName('tl').length; p++) {
+						console.log(findTemplate.getElementsByTagName('tl')[p].getAttribute('title'));	
+					}
+				}
+			});
+			api.post();
+			
+			var api = new Morebits.wiki.api('Getting existing rcats', {
+				'action': 'query',
+				'prop': 'templates',
+				'titles': Morebits.pageNameNorm,
+				'tltemplates': redirectTagPlainlist3,
+				'tllimit': 'max' // 500 is max for normal users, 5000 for bots and sysops
+			}, function getRcats(data) {
+				var p = 0;
+				var findTemplate = data.response.getElementsByTagName('api')[0].getElementsByTagName('query')[0].getElementsByTagName('pages')[0].getElementsByTagName('page')[0].getElementsByTagName('templates')[0];
+				if(findTemplate != undefined) {
+					for (p=0;p < findTemplate.getElementsByTagName('tl').length; p++) {
+						console.log(findTemplate.getElementsByTagName('tl')[p].getAttribute('title'));	
+					}
+				}
 			});
 			api.post();
 			

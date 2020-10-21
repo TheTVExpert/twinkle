@@ -84,7 +84,7 @@ Twinkle.tag.callback = function friendlytagCallback() {
 		}
 	});
 
-	switch (Twinkle.tag.mode) {
+	test: switch (Twinkle.tag.mode) {
 		case 'article':
 			Window.setTitle('Article maintenance tagging');
 
@@ -176,138 +176,151 @@ Twinkle.tag.callback = function friendlytagCallback() {
 		case 'redirect':
 			Window.setTitle('Redirect tagging');
 			
-			var redirectTagPlainlist = '';
-			var redirectTagPlainlist2 = '';
-			var redirectTagPlainlist3 = '';
-			var j = 1;
-			$.each(Twinkle.tag.redirectList, function(groupname,group) {
+			var redirectTagPlainlist = [];
+			var redirectTagDescriptionPlainlist = [];
+			var redirectTagsPresent = [];
+			var check = false;
+			$.each(Twinkle.tag.redirectList, function(groupname, group) {
 				$.each(group, function(subgroupName, subgroup) {
 					subgroup.map(function (item) {
-						j++;
-						//console.log(j);
-						if (j<50) {
-							redirectTagPlainlist += 'Template:' + item.tag + '|';
-						} else if (j<98){
-							//console.log(j);
-							redirectTagPlainlist2 += 'Template:' + item.tag + '|';
-						} else {
-							redirectTagPlainlist3 += 'Template:' + item.tag + '|';
-						}
-					});
-				});
-			});
-			redirectTagPlainlist = redirectTagPlainlist.slice(0,-1);
-			redirectTagPlainlist2 = redirectTagPlainlist2.slice(0,-1);
-			redirectTagPlainlist3 = redirectTagPlainlist3.slice(0,-1);
-			
-			var api = new Morebits.wiki.api('Getting existing rcats', {
-				'action': 'query',
-				'prop': 'templates',
-				'titles': Morebits.pageNameNorm,
-				'tltemplates': redirectTagPlainlist,
-				'tllimit': 'max' // 500 is max for normal users, 5000 for bots and sysops
-			}, function getRcats(data) {
-				var p = 0;
-				var findTemplate = data.response.getElementsByTagName('api')[0].getElementsByTagName('query')[0].getElementsByTagName('pages')[0].getElementsByTagName('page')[0].getElementsByTagName('templates')[0];
-				if(findTemplate != undefined) {
-					for (p=0;p < findTemplate.getElementsByTagName('tl').length; p++) {
-						console.log(findTemplate.getElementsByTagName('tl')[p].getAttribute('title'));	
-					}
-				}
-			});
-			api.post();
-			
-			var api = new Morebits.wiki.api('Getting existing rcats', {
-				'action': 'query',
-				'prop': 'templates',
-				'titles': Morebits.pageNameNorm,
-				'tltemplates': redirectTagPlainlist2,
-				'tllimit': 'max' // 500 is max for normal users, 5000 for bots and sysops
-			}, function getRcats(data) {
-				var p = 0;
-				var findTemplate = data.response.getElementsByTagName('api')[0].getElementsByTagName('query')[0].getElementsByTagName('pages')[0].getElementsByTagName('page')[0].getElementsByTagName('templates')[0];
-				if(findTemplate != undefined) {
-					for (p=0;p < findTemplate.getElementsByTagName('tl').length; p++) {
-						console.log(findTemplate.getElementsByTagName('tl')[p].getAttribute('title'));	
-					}
-				}
-			});
-			api.post();
-			
-			var api = new Morebits.wiki.api('Getting existing rcats', {
-				'action': 'query',
-				'prop': 'templates',
-				'titles': Morebits.pageNameNorm,
-				'tltemplates': redirectTagPlainlist3,
-				'tllimit': 'max' // 500 is max for normal users, 5000 for bots and sysops
-			}, function getRcats(data) {
-				var p = 0;
-				var findTemplate = data.response.getElementsByTagName('api')[0].getElementsByTagName('query')[0].getElementsByTagName('pages')[0].getElementsByTagName('page')[0].getElementsByTagName('templates')[0];
-				if(findTemplate != undefined) {
-					for (p=0;p < findTemplate.getElementsByTagName('tl').length; p++) {
-						console.log(findTemplate.getElementsByTagName('tl')[p].getAttribute('title'));	
-					}
-				}
-			});
-			api.post();
-			
-			var i = 1;
-			$.each(Twinkle.tag.redirectList, function(groupName, group) {
-				form.append({ type: 'header', id: 'tagHeader' + i, label: groupName });
-				var subdiv = form.append({ type: 'div', id: 'tagSubdiv' + i++ });
-				$.each(group, function(subgroupName, subgroup) {
-					subdiv.append({ type: 'div', label: [ Morebits.htmlNode('b', subgroupName) ] });
-					subdiv.append({
-						type: 'checkbox',
-						name: 'tags',
-						list: subgroup.map(function (item) {
-							return { value: item.tag, label: '{{' + item.tag + '}}: ' + item.description, subgroup: item.subgroup };
-						})
+						redirectTagPlainlist.push(item.tag);
+						redirectTagDescriptionPlainlist.push(item.description);
 					});
 				});
 			});
 
-			if (Twinkle.getPref('customRedirectTagList').length) {
-				form.append({ type: 'header', label: 'Custom tags' });
-				form.append({ type: 'checkbox', name: 'tags', list: Twinkle.getPref('customRedirectTagList') });
-			}
-			break;
+			var api = new Morebits.wiki.api('Getting existing rcats', {
+				'action': 'query',
+				'prop': 'templates',
+				'titles': Morebits.pageNameNorm,
+				'tllimit': 'max' // 500 is max for normal users, 5000 for bots and sysops
+			}, function getRcats(data) {
+				var p = 0;
+				var findTemplate = data.response.getElementsByTagName('api')[0].getElementsByTagName('query')[0].getElementsByTagName('pages')[0].getElementsByTagName('page')[0].getElementsByTagName('templates')[0];
+				if (findTemplate !== undefined) {
+					for (p = 0; p < findTemplate.getElementsByTagName('tl').length; p++) {
+						var templateName = findTemplate.getElementsByTagName('tl')[p].getAttribute('title').slice(9, );
+						if (redirectTagPlainlist.indexOf(templateName) !== -1) {
+						    redirectTagsPresent.push(templateName);
+						    console.log(templateName);
+						}
+					}
+					if (redirectTagsPresent.length != 0){
+						form.append({ type: 'header', id: 'tagHeader0', label: 'Tags already present' });
+						var subdiv = form.append({ type: 'div', id: 'tagSubdiv0' });
+						var checkboxes = [];
+						//var unCheckedTags = e.target.form.getUnchecked('existingTags');
+						redirectTagsPresent.forEach(function(tag) {
+							var checkbox =
+								{
+									value: tag,
+									label: '{{' + tag + '}}: '  + redirectTagDescriptionPlainlist[redirectTagPlainlist.indexOf(tag)],
+									checked: true,
+									style: 'font-style: italic'
+								};
+
+							checkboxes.push(checkbox);
+						});
+						subdiv.append({
+							type: 'checkbox',
+							name: 'tags',
+							list: checkboxes
+						});
+					}
+				}
+				var i = 1;
+				$.each(Twinkle.tag.redirectList, function(groupName, group) {
+					form.append({ type: 'header', id: 'tagHeader' + i, label: groupName });
+					var subdiv = form.append({ type: 'div', id: 'tagSubdiv' + i++ });
+					$.each(group, function(subgroupName, subgroup) {
+						subdiv.append({ type: 'div', label: [ Morebits.htmlNode('b', subgroupName) ] });
+						subdiv.append({
+							type: 'checkbox',
+							name: 'tags',
+							list: subgroup.map(function (item) {
+								return { value: item.tag, label: '{{' + item.tag + '}}: ' + item.description, subgroup: item.subgroup };
+							})
+						});
+					});
+				});
+
+				if (Twinkle.getPref('customRedirectTagList').length) {
+					form.append({ type: 'header', label: 'Custom tags' });
+					form.append({ type: 'checkbox', name: 'tags', list: Twinkle.getPref('customRedirectTagList') });
+				}
+				if (document.getElementsByClassName('patrollink').length) {
+					form.append({
+						type: 'checkbox',
+						list: [
+							{
+								label: 'Mark the page as patrolled/reviewed',
+								value: 'patrol',
+								name: 'patrol',
+								checked: Twinkle.getPref('markTaggedPagesAsPatrolled')
+							}
+						]
+					});
+				}
+				form.append({ type: 'submit', className: 'tw-tag-submit' });
+
+				var result = form.render();
+				Window.setContent(result);
+				Window.display();
+
+				// for quick filter:
+				$allCheckboxDivs = $(result).find('[name$=tags]').parent();
+				$allHeaders = $(result).find('h5');
+				result.quickfilter.focus();  // place cursor in the quick filter field as soon as window is opened
+				result.quickfilter.autocomplete = 'off'; // disable browser suggestions
+				result.quickfilter.addEventListener('keypress', function(e) {
+					if (e.keyCode === 13) { // prevent enter key from accidentally submitting the form
+						e.preventDefault();
+						return false;
+					}
+				});
+				Morebits.quickForm.getElements(result, 'tags').forEach(generateLinks);
+				check = true;
+			});
+			api.post();
+			break test;
 
 		default:
 			alert('Twinkle.tag: unknown mode ' + Twinkle.tag.mode);
 			break;
 	}
+	
+	if(Twinkle.tag.mode === 'article' || Twinkle.tag.mode === 'file'){
+		if (document.getElementsByClassName('patrollink').length) {
+			form.append({
+				type: 'checkbox',
+				list: [
+					{
+						label: 'Mark the page as patrolled/reviewed',
+						value: 'patrol',
+						name: 'patrol',
+						checked: Twinkle.getPref('markTaggedPagesAsPatrolled')
+					}
+				]
+			});
+		}
+		form.append({ type: 'submit', className: 'tw-tag-submit' });
 
-	if (document.getElementsByClassName('patrollink').length) {
-		form.append({
-			type: 'checkbox',
-			list: [
-				{
-					label: 'Mark the page as patrolled/reviewed',
-					value: 'patrol',
-					name: 'patrol',
-					checked: Twinkle.getPref('markTaggedPagesAsPatrolled')
-				}
-			]
+		var result = form.render();
+		Window.setContent(result);
+		Window.display();
+
+		// for quick filter:
+		$allCheckboxDivs = $(result).find('[name$=tags]').parent();
+		$allHeaders = $(result).find('h5');
+		result.quickfilter.focus();  // place cursor in the quick filter field as soon as window is opened
+		result.quickfilter.autocomplete = 'off'; // disable browser suggestions
+		result.quickfilter.addEventListener('keypress', function(e) {
+			if (e.keyCode === 13) { // prevent enter key from accidentally submitting the form
+				e.preventDefault();
+				return false;
+			}
 		});
 	}
-	form.append({ type: 'submit', className: 'tw-tag-submit' });
-
-	var result = form.render();
-	Window.setContent(result);
-	Window.display();
-
-	// for quick filter:
-	$allCheckboxDivs = $(result).find('[name$=tags]').parent();
-	$allHeaders = $(result).find('h5');
-	result.quickfilter.focus();  // place cursor in the quick filter field as soon as window is opened
-	result.quickfilter.autocomplete = 'off'; // disable browser suggestions
-	result.quickfilter.addEventListener('keypress', function(e) {
-		if (e.keyCode === 13) { // prevent enter key from accidentally submitting the form
-			e.preventDefault();
-			return false;
-		}
-	});
 
 	if (Twinkle.tag.mode === 'article') {
 
